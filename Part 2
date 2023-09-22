@@ -1,0 +1,24 @@
+import ballerina/grpc;
+import ballerina/log;
+
+// Define the gRPC service
+service<grpc:Service> libraryService {
+    // Implement AddBook, CreateUsers, UpdateBook, RemoveBook, etc. gRPC methods here.
+};
+
+function main(string... args) {
+    // Create a gRPC listener on port 8080
+    grpc:Listener listener = new (8080);
+    var serverEp = new grpc:Server(listener, serviceObj=libraryService);
+
+    // Start the gRPC server
+    var startResult = serverEp.start();
+    if (startResult is error) {
+        log:printError("Error starting the gRPC server: " + startResult.toString());
+    } else {
+        log:print("gRPC server started on port 8080");
+    }
+
+    // Stop the listener when done
+    listener.stop();
+}
