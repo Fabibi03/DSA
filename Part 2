@@ -1,53 +1,103 @@
-`proto
 syntax = "proto3";
- 
-message Book {
-   string isbn = 1;
-   string title = 2;
-   string author_1 = 3;
-   string author_2 = 4;
-   string location = 5;
-   bool is_available = 6;
-}
- 
-message User {
-   string user_id = 1;
-   string user_type = 2;
-}
- 
+
+package library;
+
 service LibraryService {
-   rpc AddBook(Book) returns (string);
-   rpc CreateUsers(stream User) returns (string);
-   rpc UpdateBook(Book) returns (string);
-   rpc RemoveBook(string) returns (repeated Book);
-   rpc ListAvailableBooks(User) returns (repeated Book);
-   rpc LocateBook(string) returns (string);
-   rpc BorrowBook(User) returns (string);
+    rpc AddBook (Book) returns (string);
+    rpc CreateUsers (stream User) returns (CreateUsersResponse);
+    rpc UpdateBook (Book) returns (Book);
+    rpc RemoveBook (string) returns (BookList);
+    rpc ListAvailableBooks (Empty) returns (BookList);
+    rpc LocateBook (string) returns (BookLocation);
+    rpc BorrowBook (BorrowRequest) returns (BorrowResponse);
 }
 
-ballerina grpc --input library.proto --output generated
+message Book {
+    string title = 1;
+    string author_1 = 2;
+    string author_2 = 3;
+    string location = 4;
+    string isbn = 5;
+    bool status = 6;
+}
 
+message User {
+    string user_id = 1;
+    string user_type = 2;
+}
+
+message CreateUsersResponse {
+    string message = 1;
+}
+
+message BookList {
+    repeated Book books = 1;
+}
+
+message Empty {}
+
+message BookLocation {
+    string location = 1;
+}
+
+message BorrowRequest {
+    string user_id = 1;
+    string isbn = 2;
+}
+
+message BorrowResponse {
+    string message = 1;
+}
 
 import ballerina/grpc;
-import ballerina/log;
+import ballerina/io;
+import library;
+map<string, library.Book> books = {};
 
-service<grpc:Service> libraryService {
-    // Implement AddBook, CreateUsers, UpdateBook, RemoveBook
+service<library.LibraryService> libraryService = new {
+    //please push your code here
 };
 
-function main(string... args) {
-    
-    grpc:Listener listener = new (8080);
-    var serverEp = new grpc:Server(listener, serviceObj=libraryService);
-
-    // gRPC server
-    var startResult = serverEp.start();
-    if (startResult is error) {
-        log:printError("Error starting the gRPC server: " + startResult.toString());
-    } else {
-        log:print("gRPC server started on port 8080");
-    }
-
-    
-    listener.stop();
+function generateIsbn() returns string {
+    //please push your code here
+    return "10953875884"; 
 }
+
+import ballerina/grpc;
+import ballerina/io;
+import library;
+
+// gRPC client endpoint
+endpoint library.LibraryServiceClient libraryClient {
+    host: "<C:\Users\MOHSS>",
+    port: <80>
+};
+
+function main() {
+    
+    io:println("Welcome to Nust Library!");
+    while (true) {
+        io:println("Menu:");
+        io:println("1. Add Book");
+        io:println("2. List Available Books");
+        io:println("3. Locate Book");
+        io:println("4. Borrow Book");
+        io:println("5. Exit");
+        io:print("Enter your choice: ");
+        string choice = io:readLine();
+
+        match choice {
+            "1" => addBook(),
+            "2" => listAvailableBooks(),
+            "3" => locateBook(),
+            "4" => borrowBook(),
+            "5" => {
+                io:println("Goodbye!");
+                break;
+            }
+            _ => io:println("Invalid choice. Please try again."),
+        }
+    }
+}
+//please push the remaining of the code here
+
